@@ -1,5 +1,7 @@
+import 'package:bmi_calculator/bmi_provider.dart';
 import 'package:bmi_calculator/bmi_result.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class BmiCalculator extends StatefulWidget {
   const BmiCalculator({super.key});
@@ -9,7 +11,6 @@ class BmiCalculator extends StatefulWidget {
 }
 
 class _BmiCalculatorState extends State<BmiCalculator> {
-
   final _weightController = TextEditingController();
   final _heightController = TextEditingController();
 
@@ -21,41 +22,45 @@ class _BmiCalculatorState extends State<BmiCalculator> {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 48.0, vertical: 8.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            TextField(
-              controller: _weightController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Enter Your Weight (in kg)',
-                prefixIcon: Icon(Icons.scale),
-                border: OutlineInputBorder(),
-
+        child: Consumer<BmiPeovider>(
+          builder:(context, provider, child) =>  Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              TextField(
+                controller: _weightController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Enter Your Weight (in kg)',
+                  prefixIcon: Icon(Icons.scale),
+                  border: OutlineInputBorder(),
+                ),
               ),
-            ),
-            const SizedBox(height: 10.0,),
-            TextField(
-              controller: _heightController,
-              keyboardType: TextInputType.number,
-              decoration: InputDecoration(
-                labelText: 'Enter Your Height (on metter)',
-                prefixIcon: Icon(Icons.numbers),
-                border: OutlineInputBorder(),
-
+              const SizedBox(
+                height: 10.0,
               ),
-            ),
-            const SizedBox(height: 20.0,),
-            OutlinedButton(
-                onPressed: _calculateBmi,
-                child: Text('Calculate'))
-          ],
+              TextField(
+                controller: _heightController,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Enter Your Height (on metter)',
+                  prefixIcon: Icon(Icons.numbers),
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(
+                height: 20.0,
+              ),
+              OutlinedButton(
+                  onPressed: _onCalculateButtonPreesed,
+                  child: Text('Calculate'))
+            ],
+          ),
         ),
       ),
     );
   }
 
-  void _calculateBmi() {
+  void _onCalculateButtonPreesed() {
     if (_weightController.text.isEmpty) {
       showMsg(context, 'Pleace provide your Weght!!');
       return;
@@ -64,19 +69,14 @@ class _BmiCalculatorState extends State<BmiCalculator> {
       showMsg(context, 'Pleace provide your Heght!!');
       return;
     }
-
-    final weight = double.parse(_weightController.text);
-    final height = double.parse(_heightController.text);
-
-    final bmi = weight / (height * height);
-
-    Navigator.push(context, MaterialPageRoute(builder: (context) => BmiResult(bmi: bmi,)));
-
-    // showMsg(context, bmi.toStringAsFixed(1));
+    context
+        .read<BmiPeovider>()
+        .calculateBmi(_weightController.text, _heightController.text);
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => const BmiResult()));
   }
 }
 
 showMsg(BuildContext context, String msg) {
-  ScaffoldMessenger.of(context)
-      .showSnackBar(SnackBar(content: Text(msg)));
+  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
 }
